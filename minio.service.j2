@@ -1,0 +1,20 @@
+[Unit]
+Description=MinIO
+Documentation=https://docs.min.io
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+User={{ minio_user }}
+Group={{ minio_group }}
+
+Environment="MINIO_ACCESS_KEY={{ minio_access_key }}"
+Environment="MINIO_SECRET_KEY={{ minio_secret_key }}"
+ExecStart={{ minio_bin_path }}/minio server --address {{ minio_server_addr }} {{ minio_data_dir }}
+
+Restart=always
+LimitNOFILE=65536
+
+[Install]
+WantedBy=multi-user.target
+

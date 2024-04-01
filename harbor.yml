@@ -1,0 +1,57 @@
+---
+- name: Install Docker and Docker Compose for Harbor
+  hosts: harbor
+  become: true
+  tasks:
+    - name: Download Harbor installer
+      get_url:
+        url: https://github.com/goharbor/harbor/releases/download/v2.2.0/harbor-offline-installer-v2.2.0.tgz
+        dest: /home/harbor.tgz
+      become: true
+
+    - name : Remove Dictoryi
+      command: rm -rf /home/harbor
+
+    - name: Create Dictory 
+      command: mkdir /home/harbor
+      
+    - name : Chmod Dictory
+      command: chmod 777 /home/harbor
+
+    - name: Extract Harbor installer
+      unarchive:
+        src: /home/harbor.tgz
+        dest: /home
+        remote_src: yes
+      become: true
+
+    - name : Yml Copy
+      shell: 
+        cp /home/harbor/harbor.yml.tmpl /home/harbor/harbor.yml
+      become: true
+
+    - name: Update harbor.yml to disable HTTPS
+      lineinfile:
+        path: /home/harbor/harbor.yml
+        regexp: '^\s*hostname: reg.mydomain.com'
+        line: '# https: 192.168.77.63'
+      become: true
+
+    - name: Update harbor.yml to disable HTTPS
+      lineinfile:
+        path: /home/harbor/harbor.yml
+        regexp: '^\s*https:'
+        line: '# https:'
+      become: true
+
+    - name: Update harbor.yml to set HTTP port
+      lineinfile:
+        path: /home/harbor/harbor.yml
+        regexp: '^\s*port: '
+        line: '  port: 80'
+      become: true
+
+    - name: Install Harbor without SSL
+      command: ./home/harbor/install.sh --with-clair
+      become: true
+

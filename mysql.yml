@@ -1,0 +1,26 @@
+---
+- name: Install and configure MySQL 8.0 on CentOS 7 using command module
+  hosts: mysql
+  become: yes
+  tasks:
+    - name: Add MySQL 8.0 repository
+      command: rpm -Uvh https://repo.mysql.com/mysql80-community-release-el7-3.noarch.rpm
+
+    - name: Install MySQL community server
+      command: yum install mysql-community-server -y
+
+    - name: Start mysqld service
+      command: systemctl start mysqld
+
+    - name: Enable mysqld service to start on boot
+      command: systemctl enable mysqld
+
+    - name: Check temporary MySQL root password
+      command: grep 'temporary password' /var/log/mysqld.log
+      register: temp_password
+      ignore_errors: true
+
+    - name: Print temporary MySQL root password
+      debug:
+        msg: "{{ temp_password.stdout }}"
+

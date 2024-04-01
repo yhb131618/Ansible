@@ -1,0 +1,7 @@
+harbor
+helm
+k8s_node1
+k8s_node2
+minio
+mysql_master
+mysql_slave

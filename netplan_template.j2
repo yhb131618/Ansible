@@ -1,0 +1,16 @@
+network:
+  version: 2
+  renderer: networkd
+  ethernets:
+    {{ interface_name }}:
+     dhcp4: no
+  bridges:
+     br0:
+       interfaces: [{{ interface_name }}]
+       addresses: [{ip_address}/24]
+       gateway4: {{ gateway_ip }}
+       nameservers:
+          addresses: [{{ nameservers | join(', ') }}]
+       parameters:
+          stp: false
+          forward-delay: 0

@@ -1,0 +1,117 @@
+- name: kvm create
+  hosts: baremetal
+  become: yes
+  vars:
+    clone_name:
+      - 'k8s_node1'
+      - 'mysql_master'
+      - 'harbor'
+      - 'minio'
+    clone_name2:
+      - 'k8s_node2'
+      - 'mysql_slave'
+      - 'jenkins'
+      - 'helm'
+    vms:
+      - clone_name: 'k8s_node1'
+        cpu: 3
+        ram: 4145728
+        mac: '00:00:00:00:00:61'
+      - clone_name: 'mysql_master'
+        cpu: 2
+        ram: 2145728
+        mac: '00:00:00:00:00:62'
+      - clone_name: 'harbor'
+        cpu: 1
+        ram: 2145728
+        mac: '00:00:00:00:00:63'
+      - clone_name: 'minio'
+        cpu: 1
+        ram: 2145728
+        mac: '00:00:00:00:00:64'
+    vms2:
+      - clone_name: 'k8s_node2'
+        cpu: 3
+        ram: 4145728
+        mac: '00:00:00:00:00:65'
+      - clone_name: 'mysql_slave'
+        cpu: 2
+        ram: 2145728
+        mac: '00:00:00:00:00:66'
+      - clone_name: 'jenkins'
+        cpu: 1
+        ram: 2145728
+        mac: '00:00:00:00:00:67'
+      - clone_name: 'helm'
+        cpu: 1
+        ram: 2145728
+        mac: '00:00:00:00:00:68'
+
+            
+
+  tasks:
+    - name: create xml
+      command: cp /img/test.xml /img/{{ item }}.xml
+      loop: "{{ clone_name }}"
+      when : inventory_hostname == 'server1'
+
+    - name: xml to convert for multiple VMs
+      include_tasks: update_vm_xml.yml
+      loop: "{{ vms }}"
+      loop_control:
+        loop_var: vm
+      when : inventory_hostname == 'server1'
+
+    - name: clone image qcow2
+      command: cp /img/test.qcow2 /var/lib/libvirt/images/{{ item }}.qcow2
+      loop: "{{ clone_name }}"
+      when : inventory_hostname == 'server1'
+
+    - name: vm define
+      command: virsh define /img/{{ item }}.xml
+      loop: "{{ clone_name }}"
+      when : inventory_hostname == 'server1'
+
+    - name: vm start 
+      command: virsh start {{ item }}
+      loop: "{{ clone_name }}"
+      when : inventory_hostname == 'server1'
+
+    - name: vm autostart
+      command: virsh autostart {{ item }}
+      loop: "{{ clone_name }}"
+      when : inventory_hostname == 'server1'
+
+
+    - name: create xml
+      command: cp /img/test.xml /img/{{ item }}.xml
+      loop: "{{ clone_name2 }}"
+      when : inventory_hostname == 'server2'
+
+    - name: xml to convert for multiple VMs
+      include_tasks: update_vm_xml.yml
+      loop: "{{ vms2 }}"
+      loop_control:
+        loop_var: vm
+      when : inventory_hostname == 'server2'
+
+    - name: clone image qcow2
+      command: cp /img/test.qcow2 /var/lib/libvirt/images/{{ item }}.qcow2
+      loop: "{{ clone_name2 }}"
+      when : inventory_hostname == 'server2'
+
+    - name: vm define
+      command: virsh define /img/{{ item }}.xml
+      loop: "{{ clone_name2 }}"
+      when : inventory_hostname == 'server2'
+
+    - name: vm start
+      command: virsh start {{ item }}
+      loop: "{{ clone_name2 }}"
+      when : inventory_hostname == 'server2'
+
+    - name: vm autostart
+      command: virsh autostart {{ item }}
+      loop: "{{ clone_name2 }}"
+      when : inventory_hostname == 'server2'
+

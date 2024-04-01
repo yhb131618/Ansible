@@ -1,0 +1,35 @@
+---
+- name: Install Jenkins on CentOS 7
+  hosts: jenkins
+  become: yes
+  tasks:
+    - name: Install Java
+      command: yum install -y java-11-openjdk
+    
+    - name: docker jenkins install
+      command: docker pull jenkins/jenkins:lts
+   
+    - name: jenkins directory
+      command: mkdir -p /jenkins/data
+
+    - name : chmod 777 diretory
+      command: chmod 777 /jenkins/data
+
+    - name: Upgrade pip
+      command: pip3 install --upgrade pip
+
+    - name: Install Docker Python library
+      pip:
+        name: docker
+
+    - name: Deploy Jenkins Docker container
+      docker_container:
+        name: jenkins
+        image: jenkins/jenkins:lts
+        state: started
+        restart_policy: always
+        published_ports:
+          - "80:8080"
+          - "50000:50000"
+        volumes:
+          - "/jenkins/data:/var/jenkins_home"  

@@ -1,0 +1,42 @@
+---
+- hosts: test_react
+  become: yes
+
+  tasks:
+  - name: Login to Harbor using command module
+    command: docker login https://192.168.77.63 -u admin -p Harbor12345
+
+
+  - name: remove env
+    command: rm -rf /home/test/.env
+
+  - name: create env
+    shell: echo "IMAGE_TAG={{ docker_tag }}" >> /home/test/.env
+    args:
+      executable: /bin/bash
+
+  - name: create env
+    shell: echo "IMAGE_N={{ n_image }}" >> /home/test/.env
+    args:
+      executable: /bin/bash
+
+  - name: create env
+    shell: echo "IMAGE_R={{ r_image }}" >> /home/test/.env
+    args:
+      executable: /bin/bash
+
+  - name :
+    shell : docker-compose -f /home/test/docker-compose.yml down
+
+  - name :
+    shell : /home/test/remove.sh
+
+  - name: Debug docker_tag variable
+    debug:
+      msg: "Docker tag is {{ docker_tag }}"
+
+  - name: Run Docker Compose
+    command: docker-compose -f /home/test/docker-compose.yml up -d
+    args:
+      chdir: /home/test/
+
